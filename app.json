@@ -20,6 +20,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "fb1f2127-0232-40dd-8edd-aab7792418a0"
+      }
+    },
+    "owner": "boikodanyil-archs-team",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/fb1f2127-0232-40dd-8edd-aab7792418a0"
     }
   }
 }
