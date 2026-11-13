@@ -1,4 +1,5 @@
 import * as Calendar from 'expo-calendar/legacy';
+import * as Sharing from 'expo-sharing';
 import React, { useState } from 'react';
 import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useApp } from '../AppContext';
@@ -15,6 +16,7 @@ export function DetailScreen({ docId }: { docId: string }) {
   const { t, days } = useI18n();
   const { docs, pop, push, removeDocument, openPaywall, settings } = useApp();
   const [menu, setMenu] = useState(false);
+  const [viewer, setViewer] = useState(false);
   const doc = docs.find((d) => d.id === docId);
   if (!doc) return <View style={styles.root} />;
 
@@ -53,6 +55,16 @@ export function DetailScreen({ docId }: { docId: string }) {
       info(t('detail.calendarDone'));
     } catch {
       info(t('detail.calendarError'));
+    }
+  }
+
+  async function sharePhoto() {
+    if (!doc?.photoUri) return;
+    try {
+      if (Platform.OS === 'web' || !(await Sharing.isAvailableAsync())) return;
+      await Sharing.shareAsync(doc.photoUri);
+    } catch {
+      info(t('detail.shareError'));
     }
   }
 
@@ -120,7 +132,9 @@ export function DetailScreen({ docId }: { docId: string }) {
         {doc.photoUri && (
           <View style={{ marginHorizontal: 20, marginTop: 20 }}>
             <Text style={styles.h2}>{t('detail.photo')}</Text>
-            <Image source={{ uri: doc.photoUri }} style={styles.photo} resizeMode="cover" accessibilityIgnoresInvertColors />
+            <Pressable onPress={() => setViewer(true)} accessibilityRole="imagebutton" accessibilityLabel={t('detail.photo')}>
+              <Image source={{ uri: doc.photoUri }} style={styles.photo} resizeMode="cover" accessibilityIgnoresInvertColors />
+            </Pressable>
           </View>
         )}
 
@@ -176,6 +190,22 @@ export function DetailScreen({ docId }: { docId: string }) {
         )}
         <Text style={styles.disclaimer}>{t('detail.disclaimer')}</Text>
       </View>
+
+      {viewer && doc.photoUri && (
+        <View style={styles.viewer}>
+          <Image source={{ uri: doc.photoUri }} style={StyleSheet.absoluteFill} resizeMode="contain" accessibilityIgnoresInvertColors />
+          <View style={styles.viewerTop}>
+            <Pressable onPress={() => setViewer(false)} accessibilityRole="button" accessibilityLabel={t('common.close')} style={styles.viewerBtn}>
+              <Icon name="close" size={20} color="#FFFFFF" />
+            </Pressable>
+            {Platform.OS !== 'web' && (
+              <Pressable onPress={sharePhoto} accessibilityRole="button" accessibilityLabel={t('detail.share')} style={[styles.viewerBtn, { paddingHorizontal: 16, width: undefined }]}>
+                <Text style={styles.viewerText}>{t('detail.share')}</Text>
+              </Pressable>
+            )}
+          </View>
+        </View>
+      )}
 
       {menu && (
         <View style={styles.menuOverlay}>
@@ -260,6 +290,10 @@ const styles = StyleSheet.create({
   },
   calText: { fontFamily: fonts.extrabold, fontSize: 15, color: colors.text },
   disclaimer: { marginTop: 4, fontFamily: fonts.regular, fontSize: 12, color: colors.textSecondary, textAlign: 'center' },
+  viewer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#07080C' },
+  viewerTop: { position: 'absolute', top: 54, left: 20, right: 20, flexDirection: 'row', justifyContent: 'space-between' },
+  viewerBtn: { height: 44, minWidth: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,.16)', alignItems: 'center', justifyContent: 'center' },
+  viewerText: { fontFamily: fonts.extrabold, fontSize: 14, color: '#FFFFFF' },
   menuOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   menu: {
     position: 'absolute',

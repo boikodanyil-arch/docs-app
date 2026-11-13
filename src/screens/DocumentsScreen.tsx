@@ -64,7 +64,7 @@ export function DocumentsScreen() {
                 <View style={[styles.heroPill, { backgroundColor: heroPill[hero.status].bg }]}>
                   <View style={[styles.dot, { backgroundColor: ringColor[hero.status] }]} />
                   <Text style={[styles.heroPillText, { color: heroPill[hero.status].fg }]}>
-                    {t(`status.${hero.status}` as const)}
+                    {hero.left < 0 ? t('status.expired') : t(`status.${hero.status}` as const)}
                   </Text>
                 </View>
                 <Text style={styles.heroTitle}>{t(heroType.title)}</Text>

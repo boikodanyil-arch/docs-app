@@ -11,7 +11,7 @@ import { colors, fonts, radius, statusColors } from '../theme';
 
 export function RemindersScreen() {
   const { t, days } = useI18n();
-  const { docs, push, rescheduleAll } = useApp();
+  const { docs, push, rescheduleAll, settings } = useApp();
   const [allowed, setAllowed] = useState(true);
   const isWeb = Platform.OS === 'web';
 
@@ -28,7 +28,7 @@ export function RemindersScreen() {
       )
       .filter((x) => x.when.getTime() > now)
       .sort((a, b) => a.when.getTime() - b.when.getTime());
-  }, [docs]);
+  }, [docs, settings.reminderHour]);
 
   async function enable() {
     const ok = await ensureNotificationPermission();

@@ -6,7 +6,9 @@ import type { DocumentItem } from './data/types';
 import { useI18n } from './i18n';
 import { removePhoto } from './lib/files';
 import type { OcrResult } from './lib/ocr';
-import { cancelDocReminders, scheduleDocReminders } from './lib/reminders';
+import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
+import { cancelDocReminders, scheduleDocReminders, setReminderHour } from './lib/reminders';
 
 export type Tab = 'docs' | 'reminders' | 'settings';
 
@@ -21,6 +23,7 @@ export interface Settings {
   lock: boolean;
   defaultReminders: number[];
   unlockAll: boolean;
+  reminderHour: number;
 }
 
 function parseSettings(raw: Record<string, string>): Settings {
@@ -33,6 +36,7 @@ function parseSettings(raw: Record<string, string>): Settings {
     lock: raw.lock === '1',
     defaultReminders: defaults,
     unlockAll: raw.unlockAll === '1',
+    reminderHour: raw.reminderHour ? Number(JSON.parse(raw.reminderHour)) || 9 : 9,
   };
 }
 
@@ -74,6 +78,7 @@ export function AppProvider({
   const [tab, setTab] = useState<Tab>('docs');
   const [stack, setStack] = useState<Route[]>([{ name: 'main' }]);
   const [paywallOpen, setPaywallOpen] = useState(false);
+  setReminderHour(settings.reminderHour);
 
   const schedule = useCallback(
     (doc: DocumentItem) =>
@@ -88,11 +93,23 @@ export function AppProvider({
     for (const d of docs) await schedule(d);
   }, [docs, schedule]);
 
-  // мова змінилась — оновити тексти запланованих сповіщень
+  // мова чи година змінились — оновити заплановані сповіщення
   useEffect(() => {
     rescheduleAll().catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lang]);
+  }, [lang, settings.reminderHour]);
+
+  // тап по сповіщенню відкриває картку документа
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const open = (resp: Notifications.NotificationResponse | null | undefined) => {
+      const id = resp?.notification.request.content.data?.docId;
+      if (typeof id === 'string') setStack([{ name: 'main' }, { name: 'detail', docId: id }]);
+    };
+    Notifications.getLastNotificationResponseAsync().then(open).catch(() => {});
+    const sub = Notifications.addNotificationResponseReceivedListener(open);
+    return () => sub.remove();
+  }, []);
 
   const updateSetting: Ctx['updateSetting'] = useCallback(async (key, value) => {
     setSettings((s) => ({ ...s, [key]: value }));

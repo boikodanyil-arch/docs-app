@@ -4,7 +4,10 @@ import type { DocumentItem } from '../data/types';
 import { toDate } from './status';
 
 export const ALL_OFFSETS = [60, 30, 7] as const;
-const HOUR = 9; // нагадування приходять о 9:00
+let hour = 9; // година, о котрій приходять нагадування (налаштування)
+export function setReminderHour(h: number) {
+  hour = h;
+}
 
 const isWeb = Platform.OS === 'web';
 
@@ -22,7 +25,7 @@ if (!isWeb) {
 export function reminderDate(validUntil: string, offsetDays: number): Date {
   const d = toDate(validUntil);
   d.setDate(d.getDate() - offsetDays);
-  d.setHours(HOUR, 0, 0, 0);
+  d.setHours(hour, 0, 0, 0);
   return d;
 }
 

@@ -24,8 +24,10 @@ export function ConfirmScreen({ photoUri, recognized, docId, renewOf }: Props) {
   const { t, days } = useI18n();
   const { docs, settings, saveDocument, removeDocument, reset, setTab, pop, openPaywall } = useApp();
   const editing = docs.find((d) => d.id === docId);
+  // при оновленні документа беремо тип, примітку й нагадування зі старого
+  const base = editing ?? docs.find((d) => d.id === renewOf);
 
-  const [type, setType] = useState<DocumentTypeId>(editing?.type ?? recognized?.type ?? 'residenceCard');
+  const [type, setType] = useState<DocumentTypeId>(editing?.type ?? recognized?.type ?? base?.type ?? 'residenceCard');
   const [typeOpen, setTypeOpen] = useState(false);
   const [issued, setIssued] = useState(
     editing?.issuedAt ? formatDate(editing.issuedAt) : recognized?.issuedAt ? formatDate(recognized.issuedAt) : '',
@@ -33,8 +35,8 @@ export function ConfirmScreen({ photoUri, recognized, docId, renewOf }: Props) {
   const [expires, setExpires] = useState(
     editing ? formatDate(editing.validUntil) : recognized?.validUntil ? formatDate(recognized.validUntil) : '',
   );
-  const [note, setNote] = useState(editing?.note ?? '');
-  const [offsets, setOffsets] = useState<number[]>(editing?.reminders ?? settings.defaultReminders);
+  const [note, setNote] = useState(base?.note ?? '');
+  const [offsets, setOffsets] = useState<number[]>(base?.reminders ?? settings.defaultReminders);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 

@@ -19,12 +19,19 @@ npm run web
 ```
 Відкрий http://localhost:8081. Для вигляду телефона натисни F12 → іконка телефона.
 
+## Перевірка коду
+```bash
+npm test          # автотести (дати, статуси, парсер тексту документів)
+npm run typecheck # перевірка типів
+```
+
 ## Структура
 - `App.tsx` — шрифти, мова, перемикання екранів
 - `src/screens/` — екрани
 - `src/components/` — кільце, іконки, анімації
 - `src/data/documentTypes.ts` — типи документів (новий тип додається тут + переклади в `src/i18n.tsx`)
 - `src/data/store.ts` (SQLite) і `store.web.ts` (браузер) — збереження
+- `src/lib/parseDocumentText.ts` — пошук типу й дат у тексті (для OCR), покритий тестами
 - `src/lib/reminders.ts` — локальні нагадування; `src/lib/ocr.ts` — місце для OCR
 - `src/data/testDocuments.ts` — тестові дані (кнопка в налаштуваннях)
 - `src/lib/status.ts` — дні, статуси (терміново ≤30, скоро 31–60, в порядку >60)

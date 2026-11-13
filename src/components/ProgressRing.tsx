@@ -3,6 +3,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { fonts } from '../theme';
 
+/** Чим більше цифр, тим менший шрифт, щоб число влізло в кільце. */
+function numSize(n: number) {
+  const digits = String(n).length;
+  return digits <= 2 ? 34 : digits === 3 ? 28 : 22;
+}
+
 const R = 52;
 const C = 2 * Math.PI * R; // ≈ 326.7
 
@@ -26,7 +32,7 @@ export function ProgressRing({ days, unit, color }: { days: number; unit: string
         />
       </Svg>
       <View style={styles.center}>
-        <Text style={styles.num}>{Math.max(0, days)}</Text>
+        <Text style={[styles.num, { fontSize: numSize(Math.max(0, days)) }]}>{Math.max(0, days)}</Text>
         <Text style={styles.unit}>{unit}</Text>
       </View>
     </View>

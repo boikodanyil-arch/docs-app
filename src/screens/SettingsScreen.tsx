@@ -85,6 +85,19 @@ export function SettingsScreen() {
           </Row>
         </Section>
 
+        <Section title={t('set.reminderTime')}>
+          <View style={styles.chips}>
+            {[8, 9, 12, 18].map((h) => (
+              <Chip
+                key={h}
+                label={`${String(h).padStart(2, '0')}:00`}
+                on={settings.reminderHour === h}
+                onPress={() => updateSetting('reminderHour', h)}
+              />
+            ))}
+          </View>
+        </Section>
+
         <Section title={t('set.defaultReminders')} hint={t('set.defaultRemindersHint')}>
           <View style={styles.chips}>
             {ALL_OFFSETS.map((o) => (

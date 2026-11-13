@@ -1,4 +1,5 @@
 import type { DocumentTypeId } from '../data/documentTypes';
+import { parseDocumentText } from './parseDocumentText';
 
 export interface OcrResult {
   type: DocumentTypeId | null;
@@ -7,11 +8,18 @@ export interface OcrResult {
 }
 
 /**
- * Розпізнавання тексту на пристрої.
- * В Expo Go нативного OCR немає — потрібна development build (етап 3 плану).
- * Поки повертаємо null, і користувач заповнює дані вручну.
- * Сюди підключимо OCR-модуль, коли будемо робити development build.
+ * Витягує текст із фото на пристрої.
+ * В Expo Go нативного OCR немає — потрібна development build (етап 3).
+ * Коли з'явиться OCR-модуль, тільки ця функція змінюється: вона має повернути розпізнаний текст.
  */
-export async function recognizeDocument(_photoUri: string): Promise<OcrResult | null> {
+async function extractText(_photoUri: string): Promise<string | null> {
   return null;
+}
+
+export async function recognizeDocument(photoUri: string): Promise<OcrResult | null> {
+  const text = await extractText(photoUri);
+  if (!text || !text.trim()) return null;
+  const parsed = parseDocumentText(text);
+  if (!parsed.type && !parsed.validUntil) return null;
+  return parsed;
 }
