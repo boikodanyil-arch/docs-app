@@ -39,3 +39,29 @@ export function nextReminder(isoDate: string, today: Date = new Date()): string 
   }
   return null;
 }
+
+/** "05.06.2031" -> "2031-06-05"; null, якщо дата некоректна. */
+export function parseInputDate(text: string): string | null {
+  const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(text.trim());
+  if (!m) return null;
+  const [, dd, mm, yyyy] = m;
+  const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+  if (d.getFullYear() !== Number(yyyy) || d.getMonth() !== Number(mm) - 1 || d.getDate() !== Number(dd)) return null;
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/** Підставляє крапки під час набору: "05062031" -> "05.06.2031". */
+export function maskDateInput(text: string): string {
+  const digits = text.replace(/\D/g, '').slice(0, 8);
+  const p = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)].filter(Boolean);
+  return p.join('.');
+}
+
+export function toDate(isoDate: string): Date {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+export function shortDate(d: Date): string {
+  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+}

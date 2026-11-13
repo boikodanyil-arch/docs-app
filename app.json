@@ -7,7 +7,15 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Face ID потрібен, щоб захистити твої документи.",
+        "NSCameraUsageDescription": "Камера потрібна, щоб сфотографувати документ.",
+        "NSPhotoLibraryUsageDescription": "Доступ до фото потрібен, щоб вибрати знімок документа.",
+        "NSCalendarsUsageDescription": "Календар потрібен, щоб додати подію про строк документа.",
+        "NSCalendarsFullAccessUsageDescription": "Календар потрібен, щоб додати подію про строк документа."
+      },
+      "bundleIdentifier": "com.docsapp.helper"
     },
     "android": {
       "adaptiveIcon": {
@@ -32,6 +40,10 @@
     },
     "updates": {
       "url": "https://u.expo.dev/fb1f2127-0232-40dd-8edd-aab7792418a0"
-    }
+    },
+    "plugins": [
+      "expo-sqlite",
+      "expo-notifications"
+    ]
   }
 }

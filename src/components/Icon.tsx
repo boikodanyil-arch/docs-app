@@ -94,6 +94,59 @@ const icons = {
       <Path d="M9 17h6" />
     </>
   ),
+  close: (
+    <>
+      <Path d="M6 6l12 12" />
+      <Path d="M18 6 6 18" />
+    </>
+  ),
+  flash: <Path d="M13 2 4 14h7l-1 8 9-12h-7z" />,
+  gallery: (
+    <>
+      <Rect x="3" y="3" width="18" height="18" rx="3" />
+      <Circle cx="9" cy="9" r="2" />
+      <Path d="m21 15-5-5L5 21" />
+    </>
+  ),
+  chevronLeft: <Path d="m15 6-6 6 6 6" />,
+  chevronDown: <Path d="m6 9 6 6 6-6" />,
+  dots: (
+    <>
+      <Circle cx="5" cy="12" r="1.8" />
+      <Circle cx="12" cy="12" r="1.8" />
+      <Circle cx="19" cy="12" r="1.8" />
+    </>
+  ),
+  check: <Path d="m5 12 5 5 9-10" />,
+  calendar: (
+    <>
+      <Rect x="3" y="5" width="18" height="16" rx="2" />
+      <Path d="M16 3v4" />
+      <Path d="M8 3v4" />
+      <Path d="M3 10h18" />
+    </>
+  ),
+  filePlus: (
+    <>
+      <Path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+      <Path d="M14 3v5h5" />
+      <Path d="M12 12v6" />
+      <Path d="M9 15h6" />
+    </>
+  ),
+  pencil: (
+    <>
+      <Path d="M4 20h4L19 9l-4-4L4 16z" />
+      <Path d="m13 7 4 4" />
+    </>
+  ),
+  trash: (
+    <>
+      <Path d="M4 7h16" />
+      <Path d="M9 7V4h6v3" />
+      <Path d="M6 7l1 13h10l1-13" />
+    </>
+  ),
 };
 
 export type IconName = keyof typeof icons;

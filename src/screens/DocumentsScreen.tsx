@@ -5,7 +5,8 @@ import { FadeIn } from '../components/motion';
 import { ProgressRing } from '../components/ProgressRing';
 import { StatusPill } from '../components/StatusPill';
 import { documentTypes } from '../data/documentTypes';
-import { FREE_LIMIT, testDocuments } from '../data/testDocuments';
+import { FREE_LIMIT } from '../data/testDocuments';
+import { useApp } from '../AppContext';
 import { daysLeft, formatDate, nextReminder, statusFor } from '../lib/status';
 import { useI18n } from '../i18n';
 import { colors, fonts, radius, statusColors } from '../theme';
@@ -19,17 +20,23 @@ const heroPill = {
 
 export function DocumentsScreen() {
   const { t, days, longDate } = useI18n();
+  const { docs, settings, push, openPaywall, setTab } = useApp();
 
   // Рахуємо дні й статуси, сортуємо: найтерміновіший зверху
   const items = useMemo(() => {
     const today = new Date();
-    return testDocuments
+    return docs
       .map((d) => {
         const left = daysLeft(d.validUntil, today);
         return { ...d, left, status: statusFor(left), reminder: nextReminder(d.validUntil, today) };
       })
       .sort((a, b) => a.left - b.left);
-  }, []);
+  }, [docs]);
+
+  function startScan() {
+    if (!settings.unlockAll && docs.length >= FREE_LIMIT) openPaywall();
+    else push({ name: 'scan' });
+  }
 
   const hero = items[0];
   const heroType = hero ? documentTypes[hero.type] : null;
@@ -44,14 +51,14 @@ export function DocumentsScreen() {
               {t('docs.title')}
             </Text>
           </View>
-          <Pressable accessibilityRole="button" accessibilityLabel={t('docs.settings')} style={styles.iconBtn}>
+          <Pressable onPress={() => setTab('settings')} accessibilityRole="button" accessibilityLabel={t('docs.settings')} style={styles.iconBtn}>
             <Icon name="sliders" size={20} color={colors.text} />
           </Pressable>
         </FadeIn>
 
         {hero && heroType && (
           <FadeIn delay={150}>
-            <Pressable accessibilityRole="button" style={styles.hero}>
+            <Pressable accessibilityRole="button" onPress={() => push({ name: 'detail', docId: hero.id })} style={styles.hero}>
               <ProgressRing days={hero.left} unit={t('docs.days')} color={ringColor[hero.status]} />
               <View style={styles.heroInfo}>
                 <View style={[styles.heroPill, { backgroundColor: heroPill[hero.status].bg }]}>
@@ -74,11 +81,18 @@ export function DocumentsScreen() {
           <Text style={styles.h2} accessibilityRole="header">
             {t('docs.all')}
           </Text>
-          <Text style={styles.counter}>{t('docs.freeCounter', { n: items.length, max: FREE_LIMIT })}</Text>
+          <Text style={styles.counter}>
+            {settings.unlockAll ? t('docs.counter', { n: items.length }) : t('docs.freeCounter', { n: items.length, max: FREE_LIMIT })}
+          </Text>
         </FadeIn>
 
         <View style={styles.list}>
-          {items.length === 0 && <Text style={styles.empty}>{t('docs.empty')}</Text>}
+          {items.length === 0 && (
+            <View style={styles.emptyBox}>
+              <Text style={styles.emptyTitle}>{t('docs.empty')}</Text>
+              <Text style={styles.empty}>{t('docs.emptyHint')}</Text>
+            </View>
+          )}
           {items.map((d, i) => {
             const type = documentTypes[d.type];
             const c = statusColors[d.status];
@@ -86,6 +100,7 @@ export function DocumentsScreen() {
               <FadeIn key={d.id} delay={350 + i * 100} distance={14}>
                 <Pressable
                   accessibilityRole="button"
+                  onPress={() => push({ name: 'detail', docId: d.id })}
                   style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}
                 >
                   <View style={[styles.rowIcon, { backgroundColor: c.bg }]}>
@@ -108,30 +123,15 @@ export function DocumentsScreen() {
 
       <View style={styles.bottom}>
         <Pressable
+          onPress={startScan}
           accessibilityRole="button"
           style={({ pressed }) => [styles.scan, pressed && { opacity: 0.88 }]}
         >
           <Icon name="scan" size={22} color="#FFFFFF" strokeWidth={2.2} />
           <Text style={styles.scanText}>{t('docs.scan')}</Text>
         </Pressable>
-
-        <View style={styles.nav} accessibilityLabel={t('nav.label')}>
-          <NavItem icon="file" label={t('nav.docs')} active />
-          <NavItem icon="bell" label={t('nav.reminders')} />
-          <NavItem icon="gear" label={t('nav.settings')} />
-        </View>
       </View>
     </View>
-  );
-}
-
-function NavItem({ icon, label, active }: { icon: 'file' | 'bell' | 'gear'; label: string; active?: boolean }) {
-  const color = active ? colors.accent : colors.textSecondary;
-  return (
-    <Pressable accessibilityRole="tab" accessibilityState={{ selected: !!active }} style={styles.navItem}>
-      <Icon name={icon} size={22} color={color} />
-      <Text style={[styles.navText, { color, fontFamily: active ? fonts.extrabold : fonts.bold }]}>{label}</Text>
-    </Pressable>
   );
 }
 
@@ -194,7 +194,9 @@ const styles = StyleSheet.create({
   h2: { fontFamily: fonts.extrabold, fontSize: 16, color: colors.text },
   counter: { fontFamily: fonts.semibold, fontSize: 13, color: colors.textSecondary },
   list: { paddingHorizontal: 20, gap: 10 },
-  empty: { fontFamily: fonts.regular, fontSize: 14, color: colors.textSecondary, textAlign: 'center', padding: 24 },
+  emptyBox: { alignItems: 'center', padding: 24, gap: 6 },
+  emptyTitle: { fontFamily: fonts.extrabold, fontSize: 16, color: colors.text },
+  empty: { fontFamily: fonts.regular, fontSize: 14, color: colors.textSecondary, textAlign: 'center' },
   row: {
     flexDirection: 'row',
     gap: 14,
@@ -208,7 +210,7 @@ const styles = StyleSheet.create({
   rowIcon: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   rowTitle: { fontFamily: fonts.extrabold, fontSize: 15, color: colors.text },
   rowSub: { fontFamily: fonts.regular, fontSize: 13, color: colors.textSecondary, marginTop: 2 },
-  bottom: { backgroundColor: colors.bg },
+  bottom: { backgroundColor: colors.bg, paddingTop: 8 },
   scan: {
     marginHorizontal: 20,
     marginBottom: 14,
@@ -222,16 +224,4 @@ const styles = StyleSheet.create({
     boxShadow: '0 12px 28px rgba(35,64,217,.4)',
   },
   scanText: { fontFamily: fonts.extrabold, fontSize: 17, color: '#FFFFFF' },
-  nav: {
-    height: 82,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderStrong,
-    backgroundColor: 'rgba(255,255,255,.85)',
-    flexDirection: 'row',
-    paddingTop: 8,
-    paddingBottom: 24,
-    paddingHorizontal: 12,
-  },
-  navItem: { flex: 1, alignItems: 'center', gap: 4, minHeight: 44 },
-  navText: { fontSize: 11 },
 });
